@@ -695,11 +695,22 @@
     function renderQuiz(data) {
         const div = document.getElementById('quiz-options');
         div.innerHTML = '';
-        data.options.forEach((opt, idx) => {
+
+        // CRIAR ARRAY COM INDICES ORIGINAIS PARA EMBARALHAR
+        let shuffledOptions = data.options.map((opt, index) => {
+            return { text: opt, originalIndex: index };
+        });
+
+        // EMBARALHAR
+        shuffledOptions.sort(() => Math.random() - 0.5);
+
+        shuffledOptions.forEach((optObj) => {
             let btn = document.createElement('div');
             btn.className = 'option-item';
-            btn.innerText = opt;
-            btn.onclick = () => checkQuiz(idx, data.a, btn);
+            btn.innerText = optObj.text;
+            // Salvar indice original para saber qual pintar de verde se errar
+            btn.dataset.index = optObj.originalIndex; 
+            btn.onclick = () => checkQuiz(optObj.originalIndex, data.a, btn);
             div.appendChild(btn);
         });
     }
@@ -707,14 +718,15 @@
     function checkQuiz(selected, correct, element) {
         if(document.getElementById('next-btn').style.display === 'block') return;
 
-        const opts = document.querySelectorAll('.option-item');
         if(selected === correct) {
             element.classList.add('correct');
             feedback(true);
             addScore(100);
         } else {
             element.classList.add('wrong');
-            opts[correct].classList.add('correct');
+            // Achar o botão certo e pintar de verde
+            const correctBtn = document.querySelector(`.option-item[data-index="${correct}"]`);
+            if(correctBtn) correctBtn.classList.add('correct');
             feedback(false);
         }
         document.getElementById('next-btn').style.display = 'block';
@@ -735,11 +747,20 @@
             timerFill.style.width = '0%';
         }, 50);
 
-        data.options.forEach((opt, idx) => {
+        // CRIAR ARRAY COM INDICES ORIGINAIS PARA EMBARALHAR
+        let shuffledOptions = data.options.map((opt, index) => {
+            return { text: opt, originalIndex: index };
+        });
+
+        // EMBARALHAR
+        shuffledOptions.sort(() => Math.random() - 0.5);
+
+        shuffledOptions.forEach((optObj, visualIndex) => {
             let btn = document.createElement('button');
-            btn.className = `k-btn ${styles[idx]}`;
-            btn.innerHTML = `<div>${icons[idx]}</div>${opt}`;
-            btn.onclick = () => checkKahoot(idx, data.a);
+            // A cor depende da POSIÇÃO VISUAL, não da resposta
+            btn.className = `k-btn ${styles[visualIndex]}`;
+            btn.innerHTML = `<div>${icons[visualIndex]}</div>${optObj.text}`;
+            btn.onclick = () => checkKahoot(optObj.originalIndex, data.a);
             grid.appendChild(btn);
         });
 
