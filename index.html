@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master History - Plataforma de Estudos</title>
+    <!-- Importando Fontes Modernas -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Poppins:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #6C5CE7;
+            --secondary: #00CEC9;
+            --accent: #FD79A8;
+            --dark: #2D3436;
+            --light: #F8F9FA;
+            --glass: rgba(255, 255, 255, 0.95);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            
+            /* Kahoot Colors */
+            --k-red: #FF3355;
+            --k-blue: #45A3E5;
+            --k-yellow: #FFC00A;
+            --k-green: #66BF39;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* HEADER */
+        header {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .score-pill {
+            background: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 800;
+            color: var(--primary);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* CONTAINER GERAL */
+        .container {
+            width: 95%;
+            max-width: 900px;
+            margin: 30px auto;
+            display: none;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .container.active { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* GRID DE TÓPICOS */
+        .topic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .topic-card {
+            background: var(--glass);
+            padding: 25px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 5px solid rgba(0,0,0,0.1);
+        }
+
+        .topic-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .topic-card h3 {
+            font-family: 'Poppins', sans-serif;
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .topic-card::after {
+            content: '➜';
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            font-size: 1.5rem;
+            color: #ddd;
+            transition: 0.3s;
+        }
+        .topic-card:hover::after { color: var(--primary); right: 15px; }
+
+        /* MODOS DE JOGO */
+        .mode-container {
+            background: var(--glass);
+            border-radius: 25px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .mode-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .mode-btn {
+            border: none;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.1s;
+            position: relative;
+            overflow: hidden;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mode-btn:active { transform: scale(0.98); }
+
+        .btn-quiz { background: linear-gradient(135deg, #6C5CE7, #a29bfe); box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3); }
+        .btn-kahoot { background: linear-gradient(135deg, #00b894, #55efc4); box-shadow: 0 10px 20px rgba(0, 184, 148, 0.3); }
+        .btn-duo { background: linear-gradient(135deg, #fdcb6e, #ffeaa7); color: #d35400; box-shadow: 0 10px 20px rgba(253, 203, 110, 0.3); }
+
+        /* JOGO / QUIZ VIEW */
+        .game-card {
+            background: var(--glass);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 700;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        #question-text {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            color: #2d3436;
+        }
+
+        /* Quiz Styles */
+        .option-item {
+            background: white;
+            border: 2px solid #eee;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            color: #555;
+        }
+        .option-item:hover { border-color: var(--primary); background: #f8f9ff; transform: translateX(5px); }
+        .option-item.correct { background: #d4edda; border-color: #28a745; color: #155724; }
+        .option-item.wrong { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+
+        /* Kahoot Styles */
+        .kahoot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .k-btn {
+            height: 120px;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 800;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+            text-shadow: 0 2px 2px rgba(0,0,0,0.3);
+            padding: 10px;
+        }
+        .k-btn:active { transform: translateY(5px); box-shadow: none; }
+        .k-red { background: var(--k-red); }
+        .k-blue { background: var(--k-blue); }
+        .k-yellow { background: var(--k-yellow); }
+        .k-green { background: var(--k-green); }
+
+        .timer-track { width: 100%; height: 10px; background: #ddd; margin-bottom: 15px; border-radius: 5px; overflow:hidden; }
+        .timer-bar { height: 100%; background: purple; width: 100%; }
+
+        /* Duo Styles */
+        .duo-box {
+            min-height: 120px;
+            border: 2px dashed #bbb;
+            background: rgba(0,0,0,0.02);
+            border-radius: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 15px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .word-bank { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .word-chip {
+            background: white;
+            border-bottom: 4px solid #e0e0e0;
+            border-right: 1px solid #e0e0e0;
+            border-left: 1px solid #e0e0e0;
+            border-top: 1px solid #e0e0e0;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            user-select: none;
+            color: #444;
+        }
+        .word-chip:active { border-bottom: 1px solid #e0e0e0; transform: translateY(3px); }
+
+        /* Buttons */
+        .nav-btn {
+            background: var(--dark);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .back-btn { background: rgba(255,255,255,0.3); color: white; border: 1px solid rgba(255,255,255,0.5); }
+        .back-btn:hover { background: rgba(255,255,255,0.5); }
+
+        .action-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1rem;
+            margin-top: 15px;
+            background: var(--k-green);
+            color: white;
+            border: none;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 0 #4da026;
+            cursor: pointer;
+        }
+        .action-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        /* NECESSAIRE REWARD */
+        .reward-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+            z-index: 999; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+            color: white; text-align: center;
+        }
+
+        .necessaire-container {
+            position: relative;
+            width: 250px; height: 180px;
+            margin: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* Desenho da Necessaire em CSS */
+        .bag-body {
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            border-radius: 30px 30px 50px 50px;
+            box-shadow: 0 0 50px rgba(255, 154, 158, 0.6), inset 0 -10px 20px rgba(0,0,0,0.1);
+            position: relative;
+            border: 4px solid rgba(255,255,255,0.8);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .bag-zipper-line {
+            position: absolute; top: 40px; width: 90%; height: 8px;
+            background: repeating-linear-gradient(90deg, #888, #888 2px, #bbb 2px, #bbb 4px);
+            border-radius: 4px; left: 5%;
+        }
+        .bag-puller {
+            width: 25px; height: 40px; background: gold;
+            position: absolute; top: 25px; left: 50%;
+            transform: translateX(-50%);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .bag-logo {
+            font-family: 'Poppins'; font-weight: 800; color: #fff;
+            font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px;
+            background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px;
+        }
+
+        .sparkle {
+            position: absolute; width: 10px; height: 10px; background: white;
+            border-radius: 50%;
+            animation: sparkleAnim 1s infinite;
+        }
+
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes sparkleAnim { 0%, 100% { opacity: 0; transform: scale(0); } 50% { opacity: 1; transform: scale(1); } }
+
+        /* Media Queries */
+        @media (max-width: 600px) {
+            .kahoot-grid { grid-template-columns: 1fr; }
+            .k-btn { height: 80px; }
+            header h1 { font-size: 1.2rem; }
+        }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🎓 Master History</h1>
+    <div class="score-pill">
+        ⭐ <span id="score">0</span>
+    </div>
+</header>
+
+<!-- HOME -->
+<div id="home-view" class="container active">
+    <h2>📚 Trilha de Conhecimento</h2>
+    <div class="topic-grid" id="topic-list">
+        <!-- JS vai preencher aqui -->
+    </div>
+    
+    <div style="margin-top: 40px; text-align: center; color: white; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px;">
+        <p style="font-size: 0.9rem;">🔒 Meta para desbloquear a Necessaire: <strong>1500 Pontos</strong></p>
+    </div>
+</div>
+
+<!-- SELEÇÃO DE MODO -->
+<div id="mode-view" class="container">
+    <button class="nav-btn back-btn" onclick="goHome()">⬅ Voltar</button>
+    <div class="mode-container" style="margin-top: 20px;">
+        <h2 id="selected-topic-title" style="color: var(--primary); text-shadow: none;">Título</h2>
+        <p style="color: #666;">Escolha seu método de estudo:</p>
+        
+        <div class="mode-buttons">
+            <button class="mode-btn btn-quiz" onclick="startMode('quiz')">
+                <span>📝 Quiz Clássico</span>
+                <small>Estilo Prova</small>
+            </button>
+            <button class="mode-btn btn-kahoot" onclick="startMode('kahoot')">
+                <span>⚡ Kahoot Mode</span>
+                <small>Rapidez</small>
+            </button>
+            <button class="mode-btn btn-duo" onclick="startMode('duo')">
+                <span>🦉 Duo Logic</span>
+                <small>Montar Frases</small>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- GAME VIEW -->
+<div id="game-view" class="container">
+    <button class="nav-btn back-btn" onclick="goBackToModes()" style="margin-bottom: 10px;">⬅ Sair</button>
+    
+    <div class="game-card">
+        <div class="question-header">
+            <span id="game-mode-label">MODO QUIZ</span>
+            <span id="question-counter">1/15</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+        <h3 id="question-text">Pergunta...</h3>
+
+        <!-- Áreas de Jogo -->
+        <div id="quiz-area" style="display:none;">
+            <div id="quiz-options"></div>
+        </div>
+
+        <div id="kahoot-area" style="display:none;">
+            <div class="timer-track"><div class="timer-bar" id="k-timer"></div></div>
+            <div class="kahoot-grid" id="kahoot-buttons"></div>
+        </div>
+
+        <div id="duo-area-wrapper" style="display:none;">
+            <div class="duo-box" id="duo-dropzone"></div>
+            <div class="word-bank" id="duo-bank"></div>
+            <button class="action-btn" onclick="checkDuo()" style="background: var(--secondary); box-shadow: 0 4px 0 #00b2ae;">VERIFICAR</button>
+        </div>
+
+        <div id="feedback" style="margin-top: 15px; font-weight: bold; min-height: 25px; text-align: center;"></div>
+        <button id="next-btn" class="action-btn" style="display:none;" onclick="nextQuestion()">PRÓXIMA ➜</button>
+    </div>
+</div>
+
+<!-- REWARD VIEW -->
+<div id="reward-view" class="reward-overlay">
+    <h1 style="font-family: 'Poppins'; font-size: 2.5rem; color: #ffeaa7;">PARABÉNS!</h1>
+    <p>Você é uma lenda da história!</p>
+    
+    <div class="necessaire-container">
+        <div class="sparkle" style="top: 0; left: 10%;"></div>
+        <div class="sparkle" style="bottom: 10%; right: 10%; animation-delay: 0.5s;"></div>
+        <div class="bag-body">
+            <div class="bag-zipper-line"></div>
+            <div class="bag-puller"></div>
+            <div class="bag-logo">MY KIT</div>
+        </div>
+    </div>
+    
+    <h2 style="color: #fff; margin-top: 20px;">NECESSAIRE DESBLOQUEADA!</h2>
+    <p>Sua dedicação valeu a pena.</p>
+    <button class="nav-btn" onclick="closeReward()" style="background: white; color: var(--primary); margin-top: 30px; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">Continuar</button>
+</div>
+
+<script>
+    // --- BANCO DE DADOS (Mesmo conteúdo) ---
+    const db = {
+        "iluminismo": {
+            title: "💡 Iluminismo e Liberalismo",
+            quiz: [
+                { q: "Qual filósofo iluminista defendia a liberdade de expressão: 'Posso não concordar com nenhuma das palavras que você disser...'?", options: ["Voltaire", "Montesquieu", "Rousseau", "Hobbes"], a: 0 },
+                { q: "Adam Smith criou o conceito de 'Mão Invisível'. O que isso significa?", options: ["O mercado se regula sozinho", "O Estado controla tudo", "Deus controla a economia", "O Rei decide os preços"], a: 0 },
+                { q: "Montesquieu propôs a divisão do Estado em:", options: ["Três Poderes (Executivo, Legislativo, Judiciário)", "Dois Poderes (Igreja e Estado)", "Poder Único (Absolutismo)", "Quatro Poderes (incluindo Moderador)"], a: 0 },
+                { q: "O Liberalismo Econômico era contra:", options: ["O Mercantilismo e intervenção do Estado", "A propriedade privada", "O lucro", "A industrialização"], a: 0 },
+                { q: "O que os Fisiocratas defendiam?", options: ["A terra (agricultura) como fonte de riqueza", "O acúmulo de metais", "A indústria", "O comércio marítimo"], a: 0 }
+            ],
+            kahoot: [
+                { q: "Autor de 'A Riqueza das Nações'?", options: ["Adam Smith", "Karl Marx", "David Ricardo", "Malthus"], a: 0 },
+                { q: "Classe social que liderou o Iluminismo?", options: ["Burguesia", "Clero", "Nobreza", "Camponeses"], a: 0 },
+                { q: "O 'Século das Luzes' refere-se ao século:", options: ["XVIII", "XIX", "XVI", "XX"], a: 0 },
+                { q: "Malthus dizia que a população cresce em PG e comida em...", options: ["PA (Aritmética)", "PG (Geométrica)", "Exponencial", "Zero"], a: 0 },
+                { q: "Teoria do 'Bom Selvagem' é de:", options: ["Rousseau", "Voltaire", "Locke", "Diderot"], a: 0 }
+            ],
+            duo: [
+                { sentence: "O Estado deve garantir a propriedade privada", words: ["O", "Estado", "deve", "garantir", "a", "propriedade", "privada"] },
+                { sentence: "Todos são iguais perante a lei", words: ["Todos", "são", "iguais", "perante", "a", "lei"] }
+            ]
+        },
+        "inglesas": {
+            title: "👑 Revoluções Inglesas",
+            quiz: [
+                { q: "Qual rei foi decapitado na Revolução Puritana?", options: ["Charles I", "Henry VIII", "James II", "Elizabeth I"], a: 0 },
+                { q: "O que determinavam os 'Atos de Navegação' de Cromwell?", options: ["Transporte só em navios ingleses", "Livre comércio total", "Fim da marinha", "Ajuda à Espanha"], a: 0 },
+                { q: "Como ficou conhecido o governo de Cromwell?", options: ["República Puritana (Commonwealth)", "Restauração", "Era Vitoriana", "Império Britânico"], a: 0 },
+                { q: "A Revolução Gloriosa (1688) resultou na:", options: ["Monarquia Constitucional", "Volta do Absolutismo", "República", "Ditadura"], a: 0 },
+                { q: "Documento assinado pelo rei após a Rev. Gloriosa:", options: ["Bill of Rights", "Magna Carta", "Constituição", "Tratado de Tordesilhas"], a: 0 }
+            ],
+            kahoot: [
+                { q: "Os 'Cabeças Redondas' apoiavam o...", options: ["Parlamento", "Rei", "Papa", "Exército Francês"], a: 0 },
+                { q: "Atos de Navegação prejudicaram a...", options: ["Holanda", "França", "Espanha", "Portugal"], a: 0 },
+                { q: "Oliver Cromwell era...", options: ["Puritano", "Católico", "Ateu", "Budista"], a: 0 },
+                { q: "A frase 'O Rei reina, mas não governa' refere-se ao...", options: ["Parlamentarismo", "Absolutismo", "Socialismo", "Anarquismo"], a: 0 },
+                { q: "Século das Revoluções Inglesas?", options: ["XVII", "XVIII", "XVI", "XIX"], a: 0 }
+            ],
+            duo: [
+                { sentence: "O Parlamento venceu o absolutismo", words: ["O", "Parlamento", "venceu", "o", "absolutismo"] },
+                { sentence: "A Inglaterra virou a rainha dos mares", words: ["A", "Inglaterra", "virou", "a", "rainha", "dos", "mares"] }
+            ]
+        },
+        "industrial": {
+            title: "🏭 Revolução Industrial",
+            quiz: [
+                { q: "Motor principal da 1ª Revolução Industrial?", options: ["Máquina a Vapor", "Eletricidade", "Nuclear", "Eólica"], a: 0 },
+                { q: "País pioneiro na industrialização:", options: ["Inglaterra", "França", "EUA", "Japão"], a: 0 },
+                { q: "Ludismo foi o movimento de:", options: ["Quebra de máquinas", "Greve geral", "Voto universal", "Fim da monarquia"], a: 0 },
+                { q: "O que foram os 'Cercamentos'?", options: ["Terras comuns viraram pastos privados", "Muros nas cidades", "Prisões para operários", "Barreiras comerciais"], a: 0 },
+                { q: "Como eram as primeiras fábricas?", options: ["Insalubres e perigosas", "Limpas e seguras", "Com ar condicionado", "Automatizadas"], a: 0 }
+            ],
+            kahoot: [
+                { q: "Combustível da 1ª fase?", options: ["Carvão", "Petróleo", "Urânio", "Gás"], a: 0 },
+                { q: "Dono dos meios de produção?", options: ["Burguesia", "Proletariado", "Rei", "Clero"], a: 0 },
+                { q: "Quem vende a força de trabalho?", options: ["Proletariado", "Patrão", "Nobre", "Escravo"], a: 0 },
+                { q: "Cartismo exigia...", options: ["Voto e direitos", "Fim das máquinas", "Mais trabalho", "Menos salário"], a: 0 },
+                { q: "Indústria de destaque inicial?", options: ["Têxtil", "Automóveis", "Química", "Aço"], a: 0 }
+            ],
+            duo: [
+                { sentence: "Máquinas substituíram o trabalho manual", words: ["Máquinas", "substituíram", "o", "trabalho", "manual"] },
+                { sentence: "O êxodo rural encheu as cidades", words: ["O", "êxodo", "rural", "encheu", "as", "cidades"] }
+            ]
+        },
+        "ideologias": {
+            title: "🚩 Ideologias do Séc. XIX",
+            quiz: [
+                { q: "O Socialismo Científico (Marx) defende:", options: ["Luta de classes e revolução", "Acordo entre patrão e operário", "Volta ao campo", "Fim da tecnologia"], a: 0 },
+                { q: "Diferença principal do Anarquismo:", options: ["Contra qualquer Estado", "A favor de um Rei forte", "A favor da Igreja", "Igual ao Capitalismo"], a: 0 },
+                { q: "Primavera dos Povos (1848) foi:", options: ["Onda de revoluções na Europa", "Um festival de flores", "Independência do Brasil", "Fim da 1ª Guerra"], a: 0 },
+                { q: "Socialistas Utópicos acreditavam em:", options: ["Sociedade ideal pacífica", "Guerra civil", "Ditadura", "Escravidão"], a: 0 },
+                { q: "Rerum Novarum foi escrita pelo:", options: ["Papa (Igreja Católica)", "Marx", "Bakunin", "Rei da Inglaterra"], a: 0 }
+            ],
+            kahoot: [
+                { q: "Proletários de todos os países...", options: ["Uni-vos!", "Correi!", "Lutai!", "Dormi!"], a: 0 },
+                { q: "Socialismo Utópico confiava na...", options: ["Bondade humana", "Violência", "Arma", "Lei"], a: 0 },
+                { q: "Bakunin era...", options: ["Anarquista", "Capitalista", "Monarquista", "Liberal"], a: 0 },
+                { q: "Nacionalismo busca...", options: ["União da nação", "Divisão", "Guerra mundial", "Fim do país"], a: 0 },
+                { q: "Ano das revoluções europeias?", options: ["1848", "1900", "1789", "1500"], a: 0 }
+            ],
+            duo: [
+                { sentence: "A história é a luta de classes", words: ["A", "história", "é", "a", "luta", "de", "classes"] },
+                { sentence: "Propriedade privada é roubo", words: ["Propriedade", "privada", "é", "roubo"] }
+            ]
+        },
+        "brasil": {
+            title: "🇧🇷 Brasil: Crise e Império",
+            quiz: [
+                { q: "Fato de 1808 que mudou o Brasil:", options: ["Chegada da Família Real", "Independência", "Guerra do Paraguai", "Fim da Escravidão"], a: 0 },
+                { q: "Abertura dos Portos significou:", options: ["Fim do Pacto Colonial", "Mais controle de Portugal", "Proibição do comércio", "Isolamento"], a: 0 },
+                { q: "Inconfidência Mineira queria:", options: ["República e fim da Derrama", "Volta do Rei", "Apoio à França", "Mais impostos"], a: 0 },
+                { q: "Diferença da Conjuração Baiana:", options: ["Popular e abolicionista", "Elitista", "Monarquista", "Sem violência"], a: 0 },
+                { q: "Dia do Fico (1822):", options: ["D. Pedro recusou voltar a Portugal", "Independência", "Constituição", "Fim da monarquia"], a: 0 }
+            ],
+            kahoot: [
+                { q: "Mártir da Inconfidência Mineira?", options: ["Tiradentes", "Zumbi", "D. Pedro", "Cabral"], a: 0 },
+                { q: "Revolução de 1817 foi em...", options: ["Pernambuco", "Rio", "Bahia", "Minas"], a: 0 },
+                { q: "Grito do Ipiranga?", options: ["Independência ou Morte", "Viva o Rei", "Abaixo Portugal", "Liberdade"], a: 0 },
+                { q: "Poder exclusivo do Imperador (1824)?", options: ["Moderador", "Judiciário", "Absoluto", "Divino"], a: 0 },
+                { q: "A Constituição de 1824 foi...", options: ["Outorgada (imposta)", "Promulgada (votada)", "Democrática", "Republicana"], a: 0 }
+            ],
+            duo: [
+                { sentence: "Digam ao povo que fico", words: ["Digam", "ao", "povo", "que", "fico"] },
+                { sentence: "O poder moderador controlava os outros", words: ["O", "poder", "moderador", "controlava", "os", "outros"] }
+            ]
+        }
+    };
+
+    // --- LÓGICA DO SISTEMA ---
+    let currentTopic = "";
+    let currentMode = "";
+    let score = 0;
+    let questionIndex = 0;
+    let questionsList = [];
+    let timerInterval;
+
+    const homeView = document.getElementById('home-view');
+    const modeView = document.getElementById('mode-view');
+    const gameView = document.getElementById('game-view');
+    const rewardView = document.getElementById('reward-view');
+    const topicList = document.getElementById('topic-list');
+    const scoreDisplay = document.getElementById('score');
+
+    // Inicialização
+    function init() {
+        for (let key in db) {
+            let card = document.createElement('div');
+            card.className = 'topic-card';
+            card.innerHTML = `<h3>${db[key].title}</h3><p style="color:#666; font-size:0.9rem;">Toque para começar</p>`;
+            card.onclick = () => selectTopic(key);
+            topicList.appendChild(card);
+        }
+    }
+
+    function selectTopic(key) {
+        currentTopic = key;
+        document.getElementById('selected-topic-title').innerText = db[key].title;
+        switchView(modeView);
+    }
+
+    function switchView(view) {
+        document.querySelectorAll('.container').forEach(d => d.classList.remove('active'));
+        view.classList.add('active');
+        window.scrollTo(0, 0);
+    }
+
+    function goHome() { switchView(homeView); }
+    function goBackToModes() { 
+        clearInterval(timerInterval); 
+        switchView(modeView); 
+    }
+
+    function startMode(mode) {
+        currentMode = mode;
+        questionIndex = 0;
+        
+        let sourceArr = db[currentTopic][mode];
+        questionsList = [...sourceArr]; 
+        
+        // Duplicar para ter volume de teste se necessário
+        if(questionsList.length < 5) questionsList = [...sourceArr, ...sourceArr];
+        
+        questionsList.sort(() => Math.random() - 0.5);
+        questionsList = questionsList.slice(0, 5); // Limita a 5 por rodada para teste rápido
+
+        switchView(gameView);
+        
+        // Reset UI
+        document.getElementById('quiz-area').style.display = 'none';
+        document.getElementById('kahoot-area').style.display = 'none';
+        document.getElementById('duo-area-wrapper').style.display = 'none';
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('feedback').innerText = "";
+        
+        const labels = { 'quiz': 'MODO QUIZ', 'kahoot': 'MODO KAHOOT', 'duo': 'MODO DUO' };
+        document.getElementById('game-mode-label').innerText = labels[mode];
+
+        if(mode === 'quiz') document.getElementById('quiz-area').style.display = 'block';
+        if(mode === 'kahoot') document.getElementById('kahoot-area').style.display = 'block';
+        if(mode === 'duo') document.getElementById('duo-area-wrapper').style.display = 'block';
+
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        if(questionIndex >= questionsList.length) {
+            finishGame();
+            return;
+        }
+
+        const qData = questionsList[questionIndex];
+        
+        // Update Header Info
+        document.getElementById('question-counter').innerText = `${questionIndex + 1}/${questionsList.length}`;
+        let progressPct = ((questionIndex) / questionsList.length) * 100;
+        document.getElementById('progress-fill').style.width = `${progressPct}%`;
+
+        document.getElementById('question-text').innerText = (currentMode === 'duo') ? "Ordene a frase corretamente:" : qData.q;
+        document.getElementById('feedback').innerText = "";
+        document.getElementById('next-btn').style.display = 'none';
+
+        if(currentMode === 'quiz') renderQuiz(qData);
+        if(currentMode === 'kahoot') renderKahoot(qData);
+        if(currentMode === 'duo') renderDuo(qData);
+    }
+
+    // --- RENDERIZADORES ---
+    function renderQuiz(data) {
+        const div = document.getElementById('quiz-options');
+        div.innerHTML = '';
+        data.options.forEach((opt, idx) => {
+            let btn = document.createElement('div');
+            btn.className = 'option-item';
+            btn.innerText = opt;
+            btn.onclick = () => checkQuiz(idx, data.a, btn);
+            div.appendChild(btn);
+        });
+    }
+
+    function checkQuiz(selected, correct, element) {
+        if(document.getElementById('next-btn').style.display === 'block') return;
+
+        const opts = document.querySelectorAll('.option-item');
+        if(selected === correct) {
+            element.classList.add('correct');
+            feedback(true);
+            addScore(100);
+        } else {
+            element.classList.add('wrong');
+            opts[correct].classList.add('correct');
+            feedback(false);
+        }
+        document.getElementById('next-btn').style.display = 'block';
+    }
+
+    function renderKahoot(data) {
+        const grid = document.getElementById('kahoot-buttons');
+        grid.innerHTML = '';
+        const styles = ['k-red', 'k-blue', 'k-yellow', 'k-green'];
+        const icons = ['🔺', '🔷', '🟡', '🟩'];
+        
+        const timerFill = document.getElementById('k-timer');
+        timerFill.style.width = '100%';
+        timerFill.style.transition = 'none';
+        
+        setTimeout(() => {
+            timerFill.style.transition = 'width 10s linear';
+            timerFill.style.width = '0%';
+        }, 50);
+
+        data.options.forEach((opt, idx) => {
+            let btn = document.createElement('button');
+            btn.className = `k-btn ${styles[idx]}`;
+            btn.innerHTML = `<div>${icons[idx]}</div>${opt}`;
+            btn.onclick = () => checkKahoot(idx, data.a);
+            grid.appendChild(btn);
+        });
+
+        clearInterval(timerInterval);
+        timerInterval = setTimeout(() => {
+             if(document.getElementById('next-btn').style.display !== 'block') {
+                 feedback(false, "Tempo Esgotado!");
+                 document.getElementById('next-btn').style.display = 'block';
+             }
+        }, 10000);
+    }
+
+    function checkKahoot(selected, correct) {
+        clearInterval(timerInterval);
+        if(document.getElementById('next-btn').style.display === 'block') return;
+
+        if(selected === correct) {
+            feedback(true);
+            addScore(150);
+        } else {
+            feedback(false);
+        }
+        document.getElementById('next-btn').style.display = 'block';
+    }
+
+    function renderDuo(data) {
+        const dropzone = document.getElementById('duo-dropzone');
+        const bank = document.getElementById('duo-bank');
+        dropzone.innerHTML = '';
+        bank.innerHTML = '';
+        
+        let shuffled = [...data.words].sort(() => Math.random() - 0.5);
+        shuffled.forEach(word => {
+            let chip = document.createElement('div');
+            chip.className = 'word-chip';
+            chip.innerText = word;
+            chip.onclick = () => {
+                if(document.getElementById('next-btn').style.display === 'block') return;
+                // Move element
+                if(chip.parentElement === bank) dropzone.appendChild(chip);
+                else bank.appendChild(chip);
+            };
+            bank.appendChild(chip);
+        });
+    }
+
+    function checkDuo() {
+        if(document.getElementById('next-btn').style.display === 'block') return;
+
+        const currentQ = questionsList[questionIndex];
+        const userSentence = Array.from(document.getElementById('duo-dropzone').children)
+                                  .map(c => c.innerText).join(" ");
+        
+        if(userSentence.toLowerCase().trim() === currentQ.sentence.toLowerCase().trim()) {
+            feedback(true);
+            addScore(120);
+        } else {
+            feedback(false, `A frase correta é: "${currentQ.sentence}"`);
+        }
+        document.getElementById('next-btn').style.display = 'block';
+    }
+
+    // UTILS
+    function feedback(isCorrect, msg="") {
+        const el = document.getElementById('feedback');
+        if(isCorrect) {
+            el.innerHTML = `<span style="color:var(--k-green)">✨ Certa Resposta! +Pontos</span>`;
+            // Confetti effect simplified
+            scoreDisplay.parentElement.style.transform = "scale(1.3)";
+            setTimeout(() => scoreDisplay.parentElement.style.transform = "scale(1)", 300);
+        } else {
+            el.innerHTML = `<span style="color:var(--k-red)">❌ Ops! ${msg}</span>`;
+        }
+    }
+
+    function addScore(points) {
+        score += points;
+        scoreDisplay.innerText = score;
+    }
+
+    function nextQuestion() {
+        questionIndex++;
+        loadQuestion();
+    }
+
+    function finishGame() {
+        alert(`Fim da rodada! Pontuação Total: ${score}`);
+        goBackToModes();
+        if(score >= 1500) openReward();
+    }
+
+    function openReward() {
+        rewardView.style.display = 'flex';
+    }
+
+    function closeReward() {
+        rewardView.style.display = 'none';
+        goHome();
+    }
+
+    init();
+</script>
+
+</body>
+</html>
